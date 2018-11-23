@@ -1,7 +1,7 @@
-C_Input: ;Função que pega um valor de char do teclado e guarda em um espaço de memória DWORD
+LerChar: ;Função que pega um valor de char do teclado e guarda em um espaço de memória DWORD
 
 	push EBP
-	mov EBP,ESP	;Frame de pilha
+	mov  EBP,ESP	;Frame de pilha
 
 	push EAX	;Guarda um eventual valor de EAX antes da função
 	push EBX	;Guarda um eventual valor de EBX antes da função
@@ -12,7 +12,7 @@ C_Input: ;Função que pega um valor de char do teclado e guarda em um espaço d
 	mov EBX,0 		;Define onde será lido, no caso do teclado
 	mov ECX,[EBP+8] ;Define onde será guardado o char lido
 	mov EDX,1 		;Define quantos bytes serão lidos, no caso de um char é 1
-	int 80h			;Invoca o SO
+	int 80h			  ;Invoca o SO
 
 	pop EDX		;Retorna o valor de EDX
 	pop ECX		;Retorna o valor de ECX
@@ -20,4 +20,30 @@ C_Input: ;Função que pega um valor de char do teclado e guarda em um espaço d
 	pop EAX		;Retorna o valor de EAX
 
 	pop EBP		;Desfaz o frame de pilha
-	ret 2		;Retorna para o código desempilhando o argumento letra_digitada
+	ret 4		  ;Retorna para o código desempilhando o argumento letra_digitada
+
+
+
+EscreveChar: ;Função que pega um char de uma WORD de espaço de memória e escreve na tela
+
+  	push EBP
+  	mov  EBP,ESP	;Frame de pilha
+
+  	push EAX	;Guarda um eventual valor de EAX antes da função
+  	push EBX	;Guarda um eventual valor de EBX antes da função
+  	push ECX	;Guarda um eventual valor de ECX antes da função
+  	push EDX	;Guarda um eventual valor de EDX antes da função
+
+  	mov EAX,4 		;Chamada ao sistema para escrita
+  	mov EBX,1 		;Define onde será escrito, no caso o monitor
+  	mov ECX,[EBP+8] ;Define de onde será lido o char a ser escrito
+  	mov EDX,1 		;Define quantos bytes serão escritos, no caso de um char é 1
+  	int 80h			;Invoca o SO
+
+  	pop EDX		;Retorna o valor de EDX
+  	pop ECX		;Retorna o valor de ECX
+  	pop EBX		;Retorna o valor de EBX
+  	pop EAX		;Retorna o valor de EAX
+
+  	pop EBP		;Desfaz o frame de pilha
+  	ret 4		;Retorna para o código desempilhando o argumento letra_digitada
