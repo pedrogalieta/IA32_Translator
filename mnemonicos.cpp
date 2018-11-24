@@ -3,6 +3,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <string>
+#include <sstream>
 
 using namespace std;
 
@@ -17,6 +18,7 @@ int sub(fstream &arquivo_saida,string &argumento){
   string linha_de_cod = "sub EAX," + argumento;
   arquivo_saida << linha_de_cod << endl;
 }
+
 
 int jmp(fstream &arquivo_saida,string &argumento){
 
@@ -100,6 +102,28 @@ int stop(fstream &arquivo_saida){
   string linha_de_cod = "mov EAX,1\nmov EBX,0\nint 0x80";
   arquivo_saida << linha_de_cod << endl;
 }
+int mult(fstream &arquivo_saida,string &argumento){
+
+  string msg_erro = "Operação causou Overflow";
+  string tamanho = "26";
+
+  string linha_de_cod = "mul " + argumento + "\njno nao_overflow";
+  arquivo_saida << linha_de_cod << endl;
+
+  s_output(arquivo_saida,msg_erro,tamanho);
+  stop(arquivo_saida);
+
+  linha_de_cod.clear();
+  linha_de_cod += "nao_overflow:";
+  arquivo_saida << linha_de_cod << endl;
+}
+
+int div(fstream &arquivo_saida,string &argumento){
+
+  string linha_de_cod = "cdq\ndiv " + argumento;
+  arquivo_saida << linha_de_cod << endl;
+
+}
 
 int main(){
 
@@ -114,18 +138,20 @@ int main(){
   orig += "orig";
   tam += "1";
 
-  add(arquivo_saida,oi);
-  sub(arquivo_saida,oi2);
-  jmp(arquivo_saida,oi1);
-  jmpn(arquivo_saida,oi1);
-  jmpp(arquivo_saida,oi1);
-  jmpz(arquivo_saida,oi1);
-  copy(arquivo_saida,orig,dest);
-  load(arquivo_saida,oi3);
-  store(arquivo_saida,oi3);
-  c_input(arquivo_saida,oi3);
-  c_output(arquivo_saida,oi3);
-  s_input(arquivo_saida,oi3,tam);
-  s_output(arquivo_saida,oi3,tam);
-  stop(arquivo_saida);
+  mult(arquivo_saida,oi3);
+  div(arquivo_saida,oi3);
+  // add(arquivo_saida,oi);
+  // sub(arquivo_saida,oi2);
+  // jmp(arquivo_saida,oi1);
+  // jmpn(arquivo_saida,oi1);
+  // jmpp(arquivo_saida,oi1);
+  // jmpz(arquivo_saida,oi1);
+  // copy(arquivo_saida,orig,dest);
+  // load(arquivo_saida,oi3);
+  // store(arquivo_saida,oi3);
+  // c_input(arquivo_saida,oi3);
+  // c_output(arquivo_saida,oi3);
+  // s_input(arquivo_saida,oi3,tam);
+  // s_output(arquivo_saida,oi3,tam);
+  // stop(arquivo_saida);
 }
