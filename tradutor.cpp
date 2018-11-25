@@ -161,12 +161,6 @@ int verifica_rotulo(string linha, int length_linha){
   return 0;
 }
 
-int jmpz(string &operando1){
-
-    string linha_de_cod = "comp EAX,0\nje [" + operando1 + "]";
-    arq_saida << linha_de_cod << endl;
-}
-
 void traduz_linha(string linha, int* pos_linha, int length_linha){
 
   string mnemonico, operando1, operando2;
@@ -200,15 +194,16 @@ void traduz_linha(string linha, int* pos_linha, int length_linha){
       //sub(operando1);
       break;
     }
-    case 3:{  //ADD
+    case 3:{  //MULT
 
       operando1 = get_next(linha, pos_linha, length_linha);
       //mult(operando1);
       break;
     }
-    case 4:{  //ADD
+    case 4:{  //DIV
 
-      arq_saida << "4" << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      //div(operando1);
       break;
     }
     case 5:{  //JMP
@@ -232,57 +227,70 @@ void traduz_linha(string linha, int* pos_linha, int length_linha){
     case 8:{  //JMPZ
 
       operando1 = get_next(linha, pos_linha, length_linha);
-      jmpz(operando1);
+      //jmpz(operando1);
       break;
     }
     case 9:{  //COPY
 
-      arq_saida << "9" << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      operando1.erase(operando1.end()-1); //Remove ','
+      operando2 = get_next(linha, pos_linha, length_linha);
+      //copy(operando1, operando2);
       break;
     }
-    case 10:{  //ADD
+    case 10:{  //LOAD
 
-      arq_saida << "10" << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      //load(operando1);
       break;
     }
-    case 11:{  //ADD
+    case 11:{  //STORE
 
-      arq_saida << "11" << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      //store(operando1);
       break;
     }
-    case 12:{  //ADD
+    case 12:{  //INPUT
 
-      arq_saida << "12" << endl;
+
       break;
     }
-    case 13:{  //ADD
+    case 13:{  //OUTPUT
 
       arq_saida << "13" << endl;
       break;
     }
-    case 14:{  //ADD
+    case 14:{  //C_INPUT
 
-      arq_saida << "14" << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      //c_input(operando1);
       break;
     }
-    case 15:{  //ADD
+    case 15:{  //C_OUTPUT
 
-      arq_saida << "15" << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      //c_output(operando1);
       break;
     }
-    case 16:{  //ADD
+    case 16:{  //S_INPUT
 
-      arq_saida << "16" << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      operando1.erase(operando1.end()-1); //Remove ','
+      operando2 = get_next(linha, pos_linha, length_linha);
+      //s_input(operando1, operando2);
       break;
     }
-    case 17:{  //ADD
+    case 17:{  //S_OUTPUT
 
-      arq_saida << "17" << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      operando1.erase(operando1.end()-1); //Remove ','
+      operando2 = get_next(linha, pos_linha, length_linha);
+      //s_output(operando1, operando2);
       break;
     }
     case 18:{  //ADD
 
-      arq_saida << "18" << endl;
+      //stop();
       break;
     }
   }

@@ -1,8 +1,1 @@
-Pedro: add
-sub
-COPY
-victor:
-jmp
-
-;seu cu
-jmpn
+Pedro: mult saman
