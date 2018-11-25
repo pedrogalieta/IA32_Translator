@@ -6,11 +6,13 @@
 #include <sstream>
 #include <list>
 #include <cmath>
+#include "mnemonicos.cpp"
 
 using namespace std;
 
 ifstream arq_fonte;
 ofstream arq_saida;
+fstream arq_pre_processado;
 
 //Mapa que armazena as intruções do assembly inventado
 std::map<string, int> i_map;
@@ -40,126 +42,6 @@ void cria_map_instrucoes(){
   i_map.insert(make_pair("S_INPUT", 16));
   i_map.insert(make_pair("S_OUTPUT", 17));
   i_map.insert(make_pair("STOP", 18));
-}
-
-int add(string &operando1){
-
-  string linha_de_cod = "add EAX, [" + operando1+"]";
-  arq_saida << linha_de_cod << endl;
-}
-
-int sub(string &operando1){
-
-  string linha_de_cod = "sub EAX, [" + operando1+"]";
-  arq_saida << linha_de_cod << endl;
-}
-
-
-int jmp(string &operando1){
-
-  string linha_de_cod = "jmp " + operando1;
-  arq_saida << linha_de_cod << endl;
-
-}
-
-int jmpn(string &operando1){
-
-  string linha_de_cod = "cmp EAX, 0\njl " + operando1;
-  arq_saida << linha_de_cod << endl;
-
-}
-
-int jmpp(string &operando1){
-
-  string linha_de_cod = "cmp EAX, 0\njg " + operando1;
-  arq_saida << linha_de_cod << endl;
-}
-
-int jmpz(string &operando1){
-
-    string linha_de_cod = "cmp EAX,0\nje "+ operando1;
-    arq_saida << linha_de_cod << endl;
-}
-
-int copy(string &operando1,string &operando2){
-
-  string linha_de_cod = "push EDX";//Guardar o valor de EDX
-
-  linha_de_cod += "\nmov EDX, [" + operando1 +"]\nmov [" + operando2 + "],EDX";
-
-  linha_de_cod += "\npop EDX";//Recuperar o valor de ECX
-
-  arq_saida << linha_de_cod << endl;
-}
-
-int load(string &operando1){
-
-  string linha_de_cod = "mov EAX,[" + operando1 + "]";
-  arq_saida << linha_de_cod << endl;
-}
-
-int store(string &operando1){
-
-  string linha_de_cod = "mov [" + operando1 + "], EAX";
-  arq_saida << linha_de_cod << endl;
-}
-
-int c_input(string &operando1){
-
-  string linha_de_cod = "push DWORD " + operando1 + "\ncall LeerChar";
-  arq_saida << linha_de_cod << endl;
-}
-
-int c_output(string &operando1){
-
-  string linha_de_cod = "push DWORD " + operando1 + "\ncall EscreverChar";
-  arq_saida << linha_de_cod << endl;
-}
-
-int s_input(string &operando1,string &operando2){
-
-  string linha_de_cod = "push DWORD " + operando1 + "\npush DWORD " + operando2 + "\ncall LeerString";
-  arq_saida << linha_de_cod << endl;
-}
-
-int s_output(string &operando1,string &operando2){
-
-  string linha_de_cod = "push DWORD " + operando1 + "\npush DWORD "+ operando2 +"\ncall EscreverString";
-  arq_saida << linha_de_cod << endl;
-}
-
-int stop(){
-
-  string linha_de_cod = "mov EAX,1\nmov EBX,0\nint 0x80";
-  arq_saida << linha_de_cod << endl;
-}
-
-int mult(string &operando1){
-
-  string msg_erro = "'Operação causou Overflow'";
-  string tamanho = "26";
-  string linha_de_cod;
-
-  linha_de_cod = "push EDX";//Guardar o valor de EDX
-  linha_de_cod += "\nmov EDX, [" + operando1 +"]";
-
-  linha_de_cod += "\nimul EDX\npop EDX\njno nao_overflow";
-  arq_saida << linha_de_cod << endl;
-
-  s_output(msg_erro,tamanho);
-  stop();
-
-  //linha_de_cod.clear();
-  linha_de_cod += "\n nao_overflow:";
-  arq_saida << linha_de_cod << endl;
-}
-
-int div(string &operando1){
-
-  string linha_de_cod = "push ECX"; //Guardar o valor de ECX
-  linha_de_cod += "\nmov ECX, [" + operando1 + "]\ncdq\nidiv ECX";
-  linha_de_cod += "\npop ECX"; //Recuperar o valor de ECX
-  arq_saida << linha_de_cod << endl;
 }
 
 //converte a string para maiúsculo
@@ -441,7 +323,7 @@ void traduz_linha(string linha, int* pos_linha, int length_linha){
   mnemonico.clear();
 }
 
-int pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
+int pre_processamento(){
 
   // Entradas:  arq_fonte = Arquivo assembly que vai ser pre processado
   // Saídas:    arq_pre_processado = Arquivo assembly já pre processado
@@ -451,6 +333,15 @@ int pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
   int i, length_linha, posicao, acumulador_erro, flag_rotulo, length_palavra, flag_IF, pular_proxima_linha = 0, contador_de_linha = 0;
   string linha, nova_linha, palavra, rotulo, valor_EQU;
   map<string, string> EQU_map; //mapa de EQU's definidos
+
+  arq_fonte.open("teste.asm");
+  arq_pre_processado.open("preprocessado.s",ios::out);
+
+  if (!arq_fonte.is_open()||!arq_pre_processado.is_open())  {
+
+    cout << "Erro ao abrir o arquivo!" << endl;
+    exit(0);
+  }
 
   // Varre o arquivo fonte
   while(getline(arq_fonte,linha)){
@@ -593,6 +484,10 @@ int pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
     rotulo.clear();
     nova_linha.clear();
   }
+
+  arq_pre_processado.close();
+  arq_fonte.close();
+
   return 1;
 }
 
@@ -600,23 +495,9 @@ int pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
 
 int main (){
 
-  fstream arq_pre_processado;
-
-  arq_fonte.open("teste.asm");
-  arq_pre_processado.open("preprocessado.s",ios::out);
-
-  if (!arq_fonte.is_open()||!arq_pre_processado.is_open())  {
-
-    cout << "Erro ao abrir o arquivo!" << endl;
-    exit(0);
-  }
-
-  if(pre_processamento(arq_fonte, arq_pre_processado) == 0){ //Se deu erro no preprocessamento o programa aborta
+  if(pre_processamento() == 0){ //Se deu erro no preprocessamento o programa aborta
     return -1;
   }
-
-  arq_pre_processado.close();
-  arq_fonte.close();
 
   cria_map_instrucoes();
   traducao();
