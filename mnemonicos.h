@@ -38,4 +38,10 @@ int mult(string &operando1);
 
 int div(string &operando1);
 
+int section(string &operando1);
+
+int space(string &operando1);
+
+int constante(string &operando1);
+
 #endif

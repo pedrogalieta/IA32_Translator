@@ -11,6 +11,7 @@ using namespace std;
 
 ifstream arq_fonte;
 ofstream arq_saida;
+fstream arq_pre_processado;
 
 //Mapa que armazena as intruções do assembly inventado
 std::map<string, int> i_map;
@@ -504,7 +505,7 @@ void traduz_linha(string linha, int* pos_linha, int length_linha, int flag_rotul
   mnemonico.clear();
 }
 
-int pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
+int pre_processamento(){
 
   // Entradas:  arq_fonte = Arquivo assembly que vai ser pre processado
   // Saídas:    arq_pre_processado = Arquivo assembly já pre processado
@@ -514,6 +515,15 @@ int pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
   int i, length_linha, posicao, acumulador_erro, flag_rotulo, length_palavra, flag_IF, pular_proxima_linha = 0, contador_de_linha = 0;
   string linha, nova_linha, palavra, rotulo, valor_EQU;
   map<string, string> EQU_map; //mapa de EQU's definidos
+
+  arq_fonte.open("teste.asm");
+  arq_pre_processado.open("preprocessado.s",ios::out);
+
+  if (!arq_fonte.is_open()||!arq_pre_processado.is_open())  {
+
+    cout << "Erro ao abrir o arquivo!" << endl;
+    exit(0);
+  }
 
   // Varre o arquivo fonte
   while(getline(arq_fonte,linha)){
@@ -656,6 +666,11 @@ int pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
     rotulo.clear();
     nova_linha.clear();
   }
+
+
+  arq_pre_processado.close();
+  arq_fonte.close();
+
   return 1;
 }
 
@@ -663,23 +678,9 @@ int pre_processamento(ifstream &arq_fonte ,fstream &arq_pre_processado){
 
 int main (){
 
-  fstream arq_pre_processado;
-
-  arq_fonte.open("teste.asm");
-  arq_pre_processado.open("preprocessado.s",ios::out);
-
-  if (!arq_fonte.is_open()||!arq_pre_processado.is_open())  {
-
-    cout << "Erro ao abrir o arquivo!" << endl;
-    exit(0);
-  }
-
-  if(pre_processamento(arq_fonte, arq_pre_processado) == 0){ //Se deu erro no preprocessamento o programa aborta
+  if(pre_processamento() == 0){ //Se deu erro no preprocessamento o programa aborta
     return -1;
   }
-
-  arq_pre_processado.close();
-  arq_fonte.close();
 
   cria_map_instrucoes();
   traducao();

@@ -1,12 +1,21 @@
-Pedro:mul saman
+Pedro:
+push EDX
+mov EDX, [saman]
+imul EDX
+pop EDX
 jno nao_overflow
-push DWORD 'Operação causou Overflow'
-push DWORD 26
-call Escrever_String
+push DWORD erro
+push DWORD 9
+call EscreverString
 mov EAX,1
 mov EBX,0
 int 0x80
-nao_overflow:
+push EDX
+mov EDX, [saman]
+imul EDX
+pop EDX
+jno nao_overflow
+ nao_overflow:
 LeerChar: ;Função que pega um valor de char do teclado e guarda no endereço indicado por [argumento 1]
 
     push EBP
