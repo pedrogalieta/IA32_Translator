@@ -22,8 +22,6 @@ LeerChar: ;Função que pega um valor de char do teclado e guarda no endereço i
     pop EBP		;Desfaz o frame de pilha
     ret 4		  ;Retorna para o código desempilhando o argumento letra_digitada
 
-
-
 EscreverChar: ;Função que pega um char de um endereço indicado por [argumento 1] e escreve na tela
 
   	push EBP
@@ -48,8 +46,6 @@ EscreverChar: ;Função que pega um char de um endereço indicado por [argumento
   	pop EBP    ;Desfaz o frame de pilha
   	ret 4      ;Retorna para o código desempilhando o argumento letra_digitada
 
-
-
 LeerString: ;Função que lê uma string com tamanho [argumento 2] e a guarda na posição [argumento 1]
 
   	push EBP
@@ -73,8 +69,6 @@ LeerString: ;Função que lê uma string com tamanho [argumento 2] e a guarda na
 
   	pop EBP		;Desfaz o frame de pilha
   	ret 8		  ;Retorna para o código desempilhando o argumento letra_digitada
-
-
 
 EscreverString: ;Função que escreve uma string com tamanho [argumento 2] da posição [argumento 1]
 
