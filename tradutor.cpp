@@ -161,6 +161,12 @@ int verifica_rotulo(string linha, int length_linha){
   return 0;
 }
 
+int jmpz(string &operando1){
+
+    string linha_de_cod = "comp EAX,0\nje [" + operando1 + "]";
+    arq_saida << linha_de_cod << endl;
+}
+
 void traduz_linha(string linha, int* pos_linha, int length_linha){
 
   string mnemonico, operando1, operando2;
@@ -184,17 +190,20 @@ void traduz_linha(string linha, int* pos_linha, int length_linha){
 
     case 1:{  //ADD
 
-      arq_saida << "1" << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      //add(operando1);
       break;
     }
-    case 2:{  //ADD
+    case 2:{  //SUB
 
-      arq_saida << "2" << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      //sub(operando1);
       break;
     }
     case 3:{  //ADD
 
-      arq_saida << "3" << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      //mult(operando1);
       break;
     }
     case 4:{  //ADD
@@ -202,27 +211,31 @@ void traduz_linha(string linha, int* pos_linha, int length_linha){
       arq_saida << "4" << endl;
       break;
     }
-    case 5:{  //ADD
+    case 5:{  //JMP
 
-      arq_saida << "5" << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      //jmp(operando1);
       break;
     }
-    case 6:{  //ADD
+    case 6:{  //JMPN
 
-      arq_saida << "6" << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      //jmpn(operando1);
       break;
     }
-    case 7:{  //ADD
+    case 7:{  //JMPP
 
-      arq_saida << "7" << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      //jmpp(operando1);
       break;
     }
-    case 8:{  //ADD
+    case 8:{  //JMPZ
 
-      arq_saida << "8" << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      jmpz(operando1);
       break;
     }
-    case 9:{  //ADD
+    case 9:{  //COPY
 
       arq_saida << "9" << endl;
       break;
