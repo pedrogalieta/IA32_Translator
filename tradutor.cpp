@@ -17,7 +17,7 @@ std::map<string, int> i_map;
 std::map<string, int>::iterator i_it;
 
 int verifica_rotulo(string linha, int length_linha);
-void traduz_linha(string linha, int* pos_linha, int length_linha);
+void traduz_linha(string linha, int* pos_linha, int length_linha,int flag_rotulo);
 
 //Função que cria o mapa onde são salvas informações das instruções
 void cria_map_instrucoes(){
@@ -40,6 +40,9 @@ void cria_map_instrucoes(){
   i_map.insert(make_pair("S_INPUT", 16));
   i_map.insert(make_pair("S_OUTPUT", 17));
   i_map.insert(make_pair("STOP", 18));
+  i_map.insert(make_pair("SECTION", 19));
+  i_map.insert(make_pair("SPACE", 20));
+  i_map.insert(make_pair("CONST", 21));
 }
 
 int add(string &operando1){
@@ -136,8 +139,8 @@ int stop(){
 
 int mult(string &operando1){
 
-  string msg_erro = "'Operação causou Overflow'";
-  string tamanho = "26";
+  string msg_erro = "erro";
+  string tamanho = "9";
   string linha_de_cod;
 
   linha_de_cod = "push EDX";//Guardar o valor de EDX
@@ -161,6 +164,43 @@ int div(string &operando1){
   linha_de_cod += "\npop ECX"; //Recuperar o valor de ECX
   arq_saida << linha_de_cod << endl;
 }
+
+int section(string &operando1){
+
+  string linha_de_cod;
+
+  if(operando1 == "DATA"){
+    linha_de_cod = "section .data\nerro db 'Overflow!',0";
+  }else if(operando1 == "BSS"){
+    linha_de_cod = "section .bss";
+    string linha_extra;
+  }else if(operando1 == "TEXT"){
+    linha_de_cod = "section .text\nglobal  _start\n_start:";
+  }
+
+  arq_saida << linha_de_cod << endl;
+
+}
+
+int space(string &operando1){
+
+  string linha_de_cod = " ";
+
+  linha_de_cod += "resd "+ operando1;
+  arq_saida << linha_de_cod << endl;
+
+
+}
+
+int constante(string &operando1){
+
+  string linha_de_cod = " ";
+
+  linha_de_cod += "dd "+ operando1;
+  arq_saida << linha_de_cod << endl;
+
+}
+
 
 //converte a string para maiúsculo
 void str_upper(string &str){
@@ -245,11 +285,12 @@ void traducao(){
   }
 
   string linha, rotulo;
-  int length_linha, pos_linha;
+  int length_linha, pos_linha, flag_rotulo;
 
   //Varre todo o arquivo, linha a linha
   while(getline(arq_fonte, linha)){
 
+    flag_rotulo = 0;
     length_linha = linha.length();
     pos_linha = 0;
 
@@ -260,24 +301,26 @@ void traducao(){
     if(verifica_rotulo(linha, length_linha) == 1){
 
       rotulo = get_next(linha, &pos_linha, length_linha); //Salva
+      rotulo.erase(rotulo.end()-1); //Remove ':'
+      flag_rotulo = 1;
       arq_saida << rotulo;  //Escreve no arquivo
 
       //Se era o único elemento da linha, continua
       if(pos_linha > length_linha){
 
-        arq_saida << endl;
+        arq_saida << ":" <<endl;
         rotulo.clear();
         continue;
       }
 
       //Se não era o único
-      traduz_linha(linha, &pos_linha, length_linha);  //Prossegue com a tradução
+      traduz_linha(linha, &pos_linha, length_linha,flag_rotulo);  //Prossegue com a tradução
     }
 
     //Se não existe rótulo
     else{
 
-      traduz_linha(linha, &pos_linha, length_linha);  //Prossegue com a tradução
+      traduz_linha(linha, &pos_linha, length_linha,flag_rotulo);  //Prossegue com a tradução
     }
 
     rotulo.clear();
@@ -303,7 +346,7 @@ int verifica_rotulo(string linha, int length_linha){
   return 0;
 }
 
-void traduz_linha(string linha, int* pos_linha, int length_linha){
+void traduz_linha(string linha, int* pos_linha, int length_linha, int flag_rotulo){
 
   string mnemonico, operando1, operando2;
 
@@ -319,6 +362,11 @@ void traduz_linha(string linha, int* pos_linha, int length_linha){
     cout << "Erro! Instrução desconhecida!" << endl;
     cout << mnemonico << endl;
     exit(1);
+  }
+
+  //Se existia um rótulo na linha e ela não é CONST ou SPACE escreve o ':'
+  if(i_it->second < 20 && flag_rotulo == 1){
+    arq_saida << ":" <<endl;
   }
 
   //Caso seja encontrado, o valor da chave mapeada é usado em um switch
@@ -395,7 +443,7 @@ void traduz_linha(string linha, int* pos_linha, int length_linha){
     }
     case 12:{  //INPUT
 
-
+      arq_saida << "12" << endl;
       break;
     }
     case 13:{  //OUTPUT
@@ -431,9 +479,24 @@ void traduz_linha(string linha, int* pos_linha, int length_linha){
       s_output(operando1, operando2);
       break;
     }
-    case 18:{  //ADD
+    case 18:{  //STOP
 
       stop();
+      break;
+    }
+    case 19:{ //SECTION
+      operando1 = get_next(linha, pos_linha, length_linha);
+      section(operando1);
+      break;
+    }
+    case 20:{ //SPACE
+      operando1 = get_next(linha, pos_linha, length_linha);
+      space(operando1);
+      break;
+    }
+    case 21:{ //CONST
+      operando1 = get_next(linha, pos_linha, length_linha);
+      constante(operando1);
       break;
     }
   }
