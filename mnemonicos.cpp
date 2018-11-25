@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string>
 #include <sstream>
+#include "mnemonicos.h"
 
 using namespace std;
 
@@ -48,7 +49,7 @@ int jmpz(string &operando1){
 
 int copy(string &operando1,string &operando2){
 
-  string linha_de_cod = "mov " + operando2 + ', ' + operando1;
+  string linha_de_cod = "mov " + operando2 + ", " + operando1;
   arq_saida << linha_de_cod << endl;
 }
 
@@ -114,35 +115,4 @@ int div(string &operando1){
 
   string linha_de_cod = "cdq\ndiv " + operando1;
   arq_saida << linha_de_cod << endl;
-}
-
-int main(){
-
-  fstream arq_saida;
-  arq_saida.open("arq_saida",ios::out);
-  string oi,tam,oi1,oi2,oi3,dest,orig;
-  oi += "add1";
-  oi1 += "label_pulo";
-  oi2 += "sub1";
-  oi3 += "label";
-  dest += "dest";
-  orig += "orig";
-  tam += "1";
-
-  mult(arq_saida,oi3);
-  div(arq_saida,oi3);
-  // add(arq_saida,oi);
-  // sub(arq_saida,oi2);
-  // jmp(arq_saida,oi1);
-  // jmpn(arq_saida,oi1);
-  // jmpp(arq_saida,oi1);
-  // jmpz(arq_saida,oi1);
-  // copy(arq_saida,orig,dest);
-  // load(arq_saida,oi3);
-  // store(arq_saida,oi3);
-  // c_input(arq_saida,oi3);
-  // c_output(arq_saida,oi3);
-  // s_input(arq_saida,oi3,tam);
-  // s_output(arq_saida,oi3,tam);
-  // stop(arq_saida);
 }
