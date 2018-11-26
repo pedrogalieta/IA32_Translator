@@ -451,7 +451,8 @@ void traduz_linha(string linha, int* pos_linha, int length_linha, int flag_rotul
     }
     case 12:{  //INPUT
 
-      arq_saida << "12" << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      input(operando1);
       break;
     }
     case 13:{  //OUTPUT
