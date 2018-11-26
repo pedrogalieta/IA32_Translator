@@ -108,6 +108,13 @@ int store(string &operando1){
   arq_saida << linha_de_cod << endl;
 }
 
+int input(string &operando1){
+
+  string linha_de_cod = "push EAX\npush DWORD buffer_input\ncall Input\nmov ["+operando1+"], EAX\npop EAX";
+  arq_saida << linha_de_cod << endl;
+
+}
+
 int c_input(string &operando1){
 
   string linha_de_cod = "push DWORD " + operando1 + "\ncall LeerChar";
@@ -173,7 +180,7 @@ int section(string &operando1){
   if(operando1 == "DATA"){
     linha_de_cod = "section .data\nerro db 'Overflow!',0";
   }else if(operando1 == "BSS"){
-    linha_de_cod = "section .bss";
+    linha_de_cod = "section .bss\nbuffer_input resb 12";
     string linha_extra;
   }else if(operando1 == "TEXT"){
     linha_de_cod = "section .text\nglobal  _start\n_start:";
