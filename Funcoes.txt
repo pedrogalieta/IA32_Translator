@@ -93,3 +93,5 @@ EscreverString: ;Função que escreve uma string com tamanho [argumento 2] da po
 
   	pop EBP	;Desfaz o frame de pilha
   	ret 8		;Retorna para o código desempilhando o argumento letra_digitada
+
+LeerInteiro: ;Função que lê um inteiro do teclado em 
