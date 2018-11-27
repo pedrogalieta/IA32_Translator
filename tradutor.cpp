@@ -13,12 +13,15 @@ ifstream arq_fonte;
 ofstream arq_saida;
 fstream arq_pre_processado;
 
+
+
 //Mapa que armazena as intruções do assembly inventado
 std::map<string, int> i_map;
 std::map<string, int>::iterator i_it;
 
 int verifica_rotulo(string linha, int length_linha);
 void traduz_linha(string linha, int* pos_linha, int length_linha,int flag_rotulo);
+void escreve_funcoes_extras();
 
 //Função que cria o mapa onde são salvas informações das instruções
 void cria_map_instrucoes(){
@@ -108,6 +111,13 @@ int store(string &operando1){
   arq_saida << linha_de_cod << endl;
 }
 
+int output(string &operando1){
+
+  string linha_de_cod = "push DWORD ["+ operando1 +"]\ncall Output";
+  arq_saida << linha_de_cod << endl;
+
+}
+
 int input(string &operando1){
 
   string linha_de_cod = "push EAX\npush DWORD buffer_input\ncall Input\nmov ["+operando1+"], EAX\npop EAX";
@@ -143,6 +153,8 @@ int stop(){
 
   string linha_de_cod = "mov EAX,1\nmov EBX,0\nint 0x80";
   arq_saida << linha_de_cod << endl;
+  escreve_funcoes_extras();
+
 }
 
 int mult(string &operando1){
@@ -158,9 +170,10 @@ int mult(string &operando1){
   arq_saida << linha_de_cod << endl;
 
   s_output(msg_erro,tamanho);
-  stop();
 
-  //linha_de_cod.clear();
+  linha_de_cod.clear();
+  linha_de_cod = "mov EAX,1\nmov EBX,0\nint 0x80";
+
   linha_de_cod += "\n nao_overflow:";
   arq_saida << linha_de_cod << endl;
 }
@@ -179,15 +192,16 @@ int section(string &operando1){
 
   if(operando1 == "DATA"){
     linha_de_cod = "section .data\nerro db 'Overflow!',0";
+    arq_saida << linha_de_cod << endl;
   }else if(operando1 == "BSS"){
-    linha_de_cod = "section .bss\nbuffer_input resb 12";
-    string linha_extra;
+    linha_de_cod = "section .bss\nbuffer_input resb 12\naux2_do_output resd 100\naux1_do_output resd 1";
+    arq_saida << linha_de_cod << endl;
   }else if(operando1 == "TEXT"){
-    linha_de_cod = "section .text\nglobal  _start\n_start:";
+    linha_de_cod = "section .text";
+    arq_saida << linha_de_cod << endl;
+    linha_de_cod = "\nglobal  _start\n_start:";
+    arq_saida << linha_de_cod << endl;
   }
-
-  arq_saida << linha_de_cod << endl;
-
 }
 
 int space(string &operando1){
@@ -252,7 +266,6 @@ int check_int(string &operando){
     return 1;
   }
 }
-
 void escreve_funcoes_extras(){//Função que escreve no arquivo de saída as funções escritas para output e input
 
   ifstream arq_extra;
@@ -266,16 +279,21 @@ void escreve_funcoes_extras(){//Função que escreve no arquivo de saída as fun
     exit(0);
   }
 
+
   while(getline(arq_extra, linha)){
     arq_saida << linha << endl;
   }
   arq_extra.close();
 }
 
-void traducao(){
+void traducao(string &nome_do_arq){
 
   //Solicita e verifica abertura do arquivo de saída
-  arq_saida.open("arquivo.s");
+  nome_do_arq.erase(nome_do_arq.end()-1);
+  nome_do_arq.erase(nome_do_arq.end()-1);
+  nome_do_arq.erase(nome_do_arq.end()-1);
+  nome_do_arq += "s";
+  arq_saida.open(&nome_do_arq[0]);
 
   if (!arq_saida.is_open()){
 
@@ -333,8 +351,6 @@ void traducao(){
 
     rotulo.clear();
   }
-
-  escreve_funcoes_extras();
 
   arq_saida.close();
   arq_fonte.close();
@@ -457,7 +473,9 @@ void traduz_linha(string linha, int* pos_linha, int length_linha, int flag_rotul
     }
     case 13:{  //OUTPUT
 
-      arq_saida << "13" << endl;
+      //arq_saida << 13 << endl;
+      operando1 = get_next(linha, pos_linha, length_linha);
+      output(operando1);
       break;
     }
     case 14:{  //C_INPUT
@@ -513,7 +531,7 @@ void traduz_linha(string linha, int* pos_linha, int length_linha, int flag_rotul
   mnemonico.clear();
 }
 
-int pre_processamento(){
+int pre_processamento(string &nome_do_arq){
 
   // Entradas:  arq_fonte = Arquivo assembly que vai ser pre processado
   // Saídas:    arq_pre_processado = Arquivo assembly já pre processado
@@ -524,7 +542,7 @@ int pre_processamento(){
   string linha, nova_linha, palavra, rotulo, valor_EQU;
   map<string, string> EQU_map; //mapa de EQU's definidos
 
-  arq_fonte.open("teste.asm");
+  arq_fonte.open(&nome_do_arq[0]);
   arq_pre_processado.open("preprocessado.s",ios::out);
 
   if (!arq_fonte.is_open()||!arq_pre_processado.is_open())  {
@@ -684,14 +702,23 @@ int pre_processamento(){
 
 /********MAIN********/
 
-int main (){
+int main(int argc, char const *argv[]) {
 
-  if(pre_processamento() == 0){ //Se deu erro no preprocessamento o programa aborta
+  string concatenador;
+
+  if(argc < 2){
+    cout << "Para rodar o programa ponha no terminal o nome do arquivo a ser traduzido no formato: 'arquivo.asm'"<<endl;
+    return -1;
+  }
+
+  concatenador += argv[1];
+
+  if(pre_processamento(concatenador) == 0){ //Se deu erro no preprocessamento o programa aborta
     return -1;
   }
 
   cria_map_instrucoes();
-  traducao();
+  traducao(concatenador);
 
   //Apaga o arquivo preprocessado
   remove("preprocessado.s");
