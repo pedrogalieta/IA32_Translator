@@ -94,7 +94,7 @@ EscreverString: ;Função que escreve uma string com tamanho [argumento 2] da po
   	pop EBP	;Desfaz o frame de pilha
   	ret 8		;Retorna para o código desempilhando o argumento letra_digitada
 
-    Input: ;Função que lê um inteiro sinalizado e guarda em EAX
+Input: ;Função que lê um inteiro sinalizado e guarda no [operando1]
 
     push EBP
     mov EBP,ESP	;Frame de pilha
@@ -113,12 +113,12 @@ EscreverString: ;Função que escreve uma string com tamanho [argumento 2] da po
     mov ecx, 0
     mov ebx, [buffer_input]
 
-    find_last:                   ;enquanto não chega no '\n'
+    find_last_do_input:                   ;enquanto não chega no '\n'
     mov EBX, [buffer_input+ECX]  ;move do lugar onde está escrito a entrada o char e guarda em ebx, ECX cresce byte a byte
     cmp BL, 45                   ;vê se o primeiro char é '-', se for vai para o loop negativo
-    je negativo
+    je negativo_do_input
     cmp BL, 10              ;vê se é '\n', se for termina o loop
-    je calc1
+    je calc1_do_input
     sub BL, 48              ;subtrai 48 para que o valor seja um inteiro e não um char (ex: '1' em ascii é 49, menos 48 = 1)
     movsx BX, BL            ;converte o valor de 8 para 16 bits extendendo o sinal
     movsx EBX, BX           ;converte o valor de 16 para 32 bits extendendo o sinal
@@ -128,14 +128,14 @@ EscreverString: ;Função que escreve uma string com tamanho [argumento 2] da po
     mul ECX                 ;multiplica o que está em EAX por 10
     pop ECX
     inc ECX                 ;aumenta o ECX em 1 para ir pro próximo byte em buffer_input
-    jmp find_last           ;repete
+    jmp find_last_do_input           ;repete
 
-    negativo:
+    negativo_do_input:
     inc ECX                 ;É análogo ao find_last só que n achei um jeito melhor de multiplicar por -1 no final sem ser criando outro loop
-    find_last2:
+    find_last2_do_input:
     mov EBX, [buffer_input+ECX]
     cmp BL, 10
-    je calc2
+    je calc2_do_input
     sub BL, 48
     movsx BX, BL
     movsx EBX, BX
@@ -145,27 +145,107 @@ EscreverString: ;Função que escreve uma string com tamanho [argumento 2] da po
     mul ECX
     pop ECX
     inc ECX
-    jmp find_last2
+    jmp find_last2_do_input
 
-    calc1:
+    calc1_do_input:
     push ecx
     mov ecx, 10
     idiv ecx
     pop ecx
-    jmp fim
+    jmp fim_do_input
 
-    calc2:
+    calc2_do_input:
     push ECX
     mov ecx, 10
     idiv ecx
     pop ecx
     NEG EAX
-    jmp fim
+    jmp fim_do_input
 
-    fim:
+    fim_do_input:
     pop EDX		;Retorna o valor de EDX
     pop ECX		;Retorna o valor de ECX
     pop EBX		;Retorna o valor de EBX
 
     pop EBP		;Desfaz o frame de pilha
     ret 4		;Retorna para o código desempilhando o argumento letra_digitada
+
+Output: ;Função que escreve um inteiro sinalizado que estava guardado no [operando1]
+
+      push EBP
+    	mov EBP,ESP	;Frame de pilha
+
+    	push EAX	;Guarda um eventual valor de EAX antes da função
+    	push EBX	;Guarda um eventual valor de EBX antes da função
+    	push ECX	;Guarda um eventual valor de ECX antes da função
+    	push EDX	;Guarda um eventual valor de EDX antes da função
+
+
+    	mov EAX, [EBP + 8]
+    	mov ECX, 10
+    	mov EBX,0
+    	cmp EAX,0
+    	jge n_neg
+    	push ECX
+    	mov ECX,45
+    	mov [aux1_do_output], ECX
+    	push EAX
+    	push EBX
+    	push EDX
+    	mov EAX,4
+    	mov EBX,1
+    	mov ECX,aux1_do_output
+    	mov EDX,1
+    	int 80h
+    	pop EDX
+    	pop EBX
+    	pop EAX
+    	neg EAX
+    	pop ECX
+
+    	n_neg:
+    	div ECX
+    	add EDX,48
+    	mov [aux2_do_output+EBX],EDX
+    	cmp EAX, 0
+    	je acabou_de_dividir
+    	add EBX,4
+    	mov EDX,0
+    	jmp n_neg
+
+    	acabou_de_dividir:
+    	cmp EBX,0
+    	jl Terminei_de_escrever
+    	mov EAX,aux2_do_output
+    	add EAX,EBX
+    	push ECX
+    	mov ECX, [EAX]
+
+    	mov [aux1_do_output], ECX
+    	push EAX
+    	push EBX
+    	push EDX
+
+    	mov EAX,4
+    	mov EBX,1
+    	mov ECX,aux1_do_output
+    	mov EDX,1
+    	int 80h
+
+    	pop EDX
+    	pop EBX
+    	pop EAX
+    	pop ECX
+
+    	sub EBX,4
+    	jmp acabou_de_dividir
+
+    	Terminei_de_escrever:
+
+    	pop EDX		;Retorna o valor de EDX
+    	pop ECX		;Retorna o valor de ECX
+    	pop EBX		;Retorna o valor de EBX
+    	pop EAX		;Retorna o valor de EAX
+
+    	pop EBP		;Desfaz o frame de pilha
+    	ret 4		;Retorna para o código desempilhando o argumento letra_digitada
