@@ -13,9 +13,7 @@ ifstream arq_fonte;
 ofstream arq_saida;
 fstream arq_pre_processado;
 
-
-
-//Mapa que armazena as intruções do assembly inventado
+//Map storing invented assembly instructions
 std::map<string, int> i_map;
 std::map<string, int>::iterator i_it;
 
@@ -23,7 +21,7 @@ int verifica_rotulo(string linha, int length_linha);
 void traduz_linha(string linha, int* pos_linha, int length_linha,int flag_rotulo);
 void escreve_funcoes_extras();
 
-//Função que cria o mapa onde são salvas informações das instruções
+//initializes a map with instructions information
 void cria_map_instrucoes(){
 
   i_map.insert(make_pair("ADD", 1));
@@ -180,9 +178,9 @@ int mult(string &operando1){
 
 int div(string &operando1){
 
-  string linha_de_cod = "push ECX"; //Guardar o valor de ECX
+  string linha_de_cod = "push ECX"; //Stores ECX value
   linha_de_cod += "\nmov ECX, [" + operando1 + "]\ncdq\nidiv ECX";
-  linha_de_cod += "\npop ECX"; //Recuperar o valor de ECX
+  linha_de_cod += "\npop ECX"; //Retrieves ECX value
   arq_saida << linha_de_cod << endl;
 }
 
@@ -224,7 +222,7 @@ int constante(string &operando1){
 }
 
 
-//converte a string para maiúsculo
+//Converts string to upper
 void str_upper(string &str){
 
   int i;
@@ -236,7 +234,7 @@ void str_upper(string &str){
   }
 }
 
-//verifica o próximo conjunto de CHAR até o ' ' ou fim de linha
+//Check next chars until whitespace or \n
 string get_next(string &linha, int *pos_linha, int length_linha){
 
   string token;
@@ -250,7 +248,7 @@ string get_next(string &linha, int *pos_linha, int length_linha){
   return token;
 }
 
-//Função que verifica se o conteudo da string passada corresponde a um numeral (inteiro)
+//Check if int
 int check_int(string &operando){
 
   int i = 5;
@@ -266,7 +264,9 @@ int check_int(string &operando){
     return 1;
   }
 }
-void escreve_funcoes_extras(){//Função que escreve no arquivo de saída as funções escritas para output e input
+
+//Writes on output file translated input/output functions
+void escreve_funcoes_extras(){
 
   ifstream arq_extra;
   string linha;
@@ -288,7 +288,7 @@ void escreve_funcoes_extras(){//Função que escreve no arquivo de saída as fun
 
 void traducao(string &nome_do_arq){
 
-  //Solicita e verifica abertura do arquivo de saída
+  //Checks opening output file
   nome_do_arq.erase(nome_do_arq.end()-1);
   nome_do_arq.erase(nome_do_arq.end()-1);
   nome_do_arq.erase(nome_do_arq.end()-1);
@@ -301,7 +301,7 @@ void traducao(string &nome_do_arq){
     exit(0);
   }
 
-  //Solicita e verifica abertura do arquivo de entrada
+  //Checks opening input file
   arq_fonte.open("preprocessado.s");
 
   if (!arq_fonte.is_open()){
@@ -313,17 +313,17 @@ void traducao(string &nome_do_arq){
   string linha, rotulo;
   int length_linha, pos_linha, flag_rotulo;
 
-  //Varre todo o arquivo, linha a linha
+  //Iterate line by line
   while(getline(arq_fonte, linha)){
 
     flag_rotulo = 0;
     length_linha = linha.length();
     pos_linha = 0;
 
-    //Linha vazia ou somente comentário, continua
+    //Empty or comented line, continue
     if(length_linha == 0 || linha[0] == ';') continue;
 
-    //Se existe rótulo
+    //If there's a label
     if(verifica_rotulo(linha, length_linha) == 1){
 
       rotulo = get_next(linha, &pos_linha, length_linha); //Salva
@@ -331,7 +331,7 @@ void traducao(string &nome_do_arq){
       flag_rotulo = 1;
       arq_saida << rotulo;  //Escreve no arquivo
 
-      //Se era o único elemento da linha, continua
+      //If line ended
       if(pos_linha > length_linha){
 
         arq_saida << ":" <<endl;
@@ -339,11 +339,11 @@ void traducao(string &nome_do_arq){
         continue;
       }
 
-      //Se não era o único
+      //If line didn't end
       traduz_linha(linha, &pos_linha, length_linha,flag_rotulo);  //Prossegue com a tradução
     }
 
-    //Se não existe rótulo
+    //If there's no label
     else{
 
       traduz_linha(linha, &pos_linha, length_linha,flag_rotulo);  //Prossegue com a tradução
@@ -374,13 +374,13 @@ void traduz_linha(string linha, int* pos_linha, int length_linha, int flag_rotul
 
   string mnemonico, operando1, operando2;
 
-  //Lê o mnemonico da instrução e converte para upper case
+  //Reads instruction mnemonic and converts to upper case
   mnemonico = get_next(linha, pos_linha, length_linha);
   str_upper(mnemonico);
 
   i_it = i_map.find(mnemonico); //Procura pelo mnemonico no mapa de inctrucoes
 
-  //Caso não exista, erro
+  //If don't exist, error
   if(i_it == i_map.end()){
 
     cout << "Erro! Instrução desconhecida!" << endl;
@@ -388,12 +388,12 @@ void traduz_linha(string linha, int* pos_linha, int length_linha, int flag_rotul
     exit(1);
   }
 
-  //Se existia um rótulo na linha e ela não é CONST ou SPACE escreve o ':'
+  //If there's a label and instruction is not CONST or SPACE
   if(i_it->second < 20 && flag_rotulo == 1){
     arq_saida << ":" <<endl;
   }
 
-  //Caso seja encontrado, o valor da chave mapeada é usado em um switch
+  //If found, map key value is used in a switch
 
   switch(i_it->second){
 
@@ -533,14 +533,14 @@ void traduz_linha(string linha, int* pos_linha, int length_linha, int flag_rotul
 
 int pre_processamento(string &nome_do_arq){
 
-  // Entradas:  arq_fonte = Arquivo assembly que vai ser pre processado
-  // Saídas:    arq_pre_processado = Arquivo assembly já pre processado
-  //            A função retorna um caso o pre processamento tenho sido sucesso e 0 caso não
-  // Comentários: Essa função retira comentários do código fonte e trata as diretivas EQU e IF
+  // Input:  arq_fonte = assembly file to be processed
+  // Output:    arq_pre_processado = pre processed assembly file
+  //            Return 1 if sucessfull and 0 if not
+  // Comment: function removes comments and deals with EQU and IF statements
 
   int i, length_linha, posicao, acumulador_erro, flag_rotulo, length_palavra, flag_IF, pular_proxima_linha = 0, contador_de_linha = 0;
   string linha, nova_linha, palavra, rotulo, valor_EQU;
-  map<string, string> EQU_map; //mapa de EQU's definidos
+  map<string, string> EQU_map; //EQU maps
 
   arq_fonte.open(&nome_do_arq[0]);
   arq_pre_processado.open("preprocessado.s",ios::out);
@@ -551,36 +551,36 @@ int pre_processamento(string &nome_do_arq){
     exit(0);
   }
 
-  // Varre o arquivo fonte
+  //Iterates over file
   while(getline(arq_fonte,linha)){
 
     contador_de_linha++;
     acumulador_erro = 0;
     flag_IF = 0;
-    flag_rotulo = 0; // Serve para saber se a linha lida tinha algum rótulo definido
+    flag_rotulo = 0; //Flag about existing label
     length_linha = linha.length();
 
-    // Esse if faz com que caso a linha comece por comentário não fique um \n no arquivo pre processado
+    //Jump line if comment
     if(linha[0] == ';'){
       continue;
     }
 
-    // Esse if faz com que o pre processador ignore a próxima linha caso tenha um IF 0 antes dela
+    //Deals with IF statement jumping line (IF 0) 
     if(pular_proxima_linha == 1){
       pular_proxima_linha = 0;
       continue;
     }
 
-    // Varre a linha
+    //Iterates line
     for(i=0; i<length_linha; i++){
       nova_linha += linha[i];
       palavra += linha[i];
 
-      // Se for ';' deve parar de ler a linha já que é comentário
+      //If comment found, stop
       if(linha[i] == ';'){
-           // Apaga o ';'
+           //Erases ';'
            nova_linha.erase(nova_linha.end()-1);
-           // Esse if apaga também o espaço q vem antes do ';' se tiver
+           //Erases whitespace (if exists)
            if(linha[i-1] == ' '){
              nova_linha.erase(nova_linha.end()-1);
            }
@@ -591,28 +591,28 @@ int pre_processamento(string &nome_do_arq){
         linha[i] = ' ';
       }
 
-      // Pega os rótulos presentes no código
+      //Get label
       if(linha[i] == ':'){
         flag_rotulo = 1;
         posicao = i;
         rotulo += nova_linha;
-        // Retira o ':' do rótulo
+        //Erases ':' from label
         rotulo.erase(rotulo.end()-1);
       }
 
-      // Esse bloco identifica se foi lido um IF e seta a flag para tratar essa informação para 1
+      //Check if there's an IF and sets a flag
       if(linha[i] == ' ' && palavra.length()==3){
         if(linha[i-2] == 'I' && linha[i-1] == 'F'){
           flag_IF = 1;
         }
       }
 
-      // Essa parte do código checa se existe algum EQU para ser substituído, esse if checa a palavra antes de um espaço em branco
+      //Check if there's an EQU to be replaced
       if(linha[i] == ' '){
         if(palavra.length() > 1){
-          //remove espaço
+          //remove whitespace
           palavra.erase(palavra.end()-1);
-          // Checa se a palavra lida é um EQU já definido, se for apagamos a palavra e escrevemos o seu valor no map de EQU's
+          //Check if it's a defined EQU and replace it if true
           if (EQU_map.find(palavra) != EQU_map.end()){
             length_palavra = palavra.length();
             nova_linha.erase(i-length_palavra-acumulador_erro,length_palavra+1);
@@ -622,14 +622,14 @@ int pre_processamento(string &nome_do_arq){
             acumulador_erro += length_palavra-1;
           }
         }else{
-          // Essa linha de código apaga espaços extras que aparecerem no código fonte
+          //Erase extra whitespaces
           nova_linha.erase(nova_linha.end()-1);
           acumulador_erro +=1;
         }
         palavra.clear();
-      // Complemento da checagem de EQU's a serem substituídos, esse if checa uma palavra no final da linha
+      //Complement to EQU check till end of line
       }else if(i == (length_linha - 1)){
-        // Checa se a palavra lida é um EQU já definido, se for apagamos a palavra e escrevemos o seu valor no map de EQU's
+        //Check if it's a defined EQU and replace it if true
         if (EQU_map.find(palavra) != EQU_map.end()){
           length_palavra = palavra.length();
           nova_linha.erase(i-length_palavra+1-acumulador_erro,length_palavra);
@@ -639,11 +639,11 @@ int pre_processamento(string &nome_do_arq){
       }
     }
 
-    // Checa se o rótulo era para um EQU ou outra coisa
+    //Check label meaning
     if(flag_rotulo == 1){
-      // Verificar se existe um jeito melhor para isso \/
+
       if(nova_linha[posicao+2] == 'E' && nova_linha[posicao+3] == 'Q' && nova_linha[posicao+4] == 'U'){
-        // Checa se o EQU foi declarado sem argumento
+        //Check if EQU has an argument
         if(nova_linha[posicao+5] == ' ' ){
           for(i=posicao+6;i<length_linha;i++){
             valor_EQU+=nova_linha[i];
@@ -652,39 +652,39 @@ int pre_processamento(string &nome_do_arq){
           cout<< "Linha "<< contador_de_linha << ": Erro sintático! EQU definido sem argumento" << endl;
           return 0;
         }
-        // Checa se o EQU já foi declarado anteriormente
+        //Check if it's a defined EQU
         if(EQU_map.find(rotulo) == EQU_map.end()){
-          // Se não, adicionar no map e continuar o pre processamento
+          //If not, insert in map and continue
           EQU_map.insert(make_pair(rotulo,valor_EQU));
           valor_EQU.clear();
           rotulo.clear();
           nova_linha.clear();
           continue;
         } else {
-          // Se sim, erro
+          //If yes, error
           cout<< "Linha "<< contador_de_linha << ": Erro semântico! EQU redefinido" << endl;
           return 0;
         }
       }
     }
 
-    // Caso essa linha tenha um IF checamos para ver se ele é falso ou verdadeiro
+    //If there's an IF check for true or false
     if(flag_IF == 1){
       for(i=3;i<nova_linha.length();i++){
         palavra+=nova_linha[i];
       }
-      // Se for falso, devemos ignorar a próxima linha se verdadeiro seguir na leitura normalmente
+      //If false, skip next line
       if(atoi(palavra.c_str()) == 0){
         pular_proxima_linha = 1;
       }
-      // Depois de tratar o IF essa linha pode ser descartada
+      //After solving if, discard
       valor_EQU.clear();
       rotulo.clear();
       nova_linha.clear();
       continue;
     }
 
-    // Escreve no arquivo programa.pre a linha sem os comentarios, com EQU substituído
+    //Writes translated line on file programa.pre 
     arq_pre_processado << nova_linha << endl;
 
     // Limpa as strings utilizadas na função
@@ -713,21 +713,15 @@ int main(int argc, char const *argv[]) {
 
   concatenador += argv[1];
 
-  if(pre_processamento(concatenador) == 0){ //Se deu erro no preprocessamento o programa aborta
+  if(pre_processamento(concatenador) == 0){ //If pre processing error
     return -1;
   }
 
   cria_map_instrucoes();
   traducao(concatenador);
 
-  //Apaga o arquivo preprocessado
+  //Erases pre processed file
   remove("preprocessado.s");
-
-  /*//VERIFICA CONTEUDO DA MAPA DE INSTRUCOES
-  for(i_it = i_map.begin(); i_it != i_map.end(); i_it++){
-
-    cout << i_it->first << ' ' << i_it->second << endl;
-  }*/
 
   return 0;
 }
